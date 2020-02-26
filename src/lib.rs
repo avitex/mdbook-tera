@@ -1,14 +1,12 @@
+use error_chain::ChainedError;
 use mdbook::book::{Book, BookItem};
 use mdbook::errors::{Error as BookError, ErrorKind as BookErrorKind};
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use serde::Serialize;
-use tera::Tera;
+use tera::{Context, Tera};
 use toml::Value as TomlValue;
-use error_chain::ChainedError;
 
 use self::errors::{Error, ErrorKind};
-
-pub use tera::Context;
 
 mod errors {
     use error_chain::error_chain;
@@ -26,6 +24,7 @@ mod errors {
     }
 }
 
+/// A mdbook preprocessor that renders tera.
 #[derive(Clone)]
 pub struct TeraPreprocessor {
     tera: Tera,
@@ -44,20 +43,26 @@ impl TeraPreprocessor {
         &mut self.tera
     }
 
-    pub fn from_json_str(json_str: &str) -> Self {
-        let value = json_str.parse().expect("json context malformed");
+    pub fn from_json_str<S: AsRef<str>>(json_str: S) -> Self {
+        let value = json_str.as_ref().parse().expect("json context malformed");
         let context = Context::from_value(value).expect("invalid tera context");
         Self::new(context)
     }
 
-    pub fn from_toml_str(toml_str: &str) -> Self {
-        let value: TomlValue = toml_str.parse().expect("toml context malformed");
+    pub fn from_toml_str<S: AsRef<str>>(toml_str: S) -> Self {
+        let value: TomlValue = toml_str.as_ref().parse().expect("toml context malformed");
         Self::from_serialize(value)
     }
 
     pub fn from_serialize(value: impl Serialize) -> Self {
         let context = Context::from_serialize(value).expect("invalid tera context");
         Self::new(context)
+    }
+}
+
+impl Default for TeraPreprocessor {
+    fn default() -> Self {
+        Self::new(Default::default())
     }
 }
 

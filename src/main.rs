@@ -1,15 +1,32 @@
-use std::io;
-use std::process;
+use std::path::Path;
+use std::{fs, io, process};
 
 use clap::{App, Arg, ArgMatches, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
+use semver::{Version, VersionReq};
 
 use mdbook_tera::TeraPreprocessor;
 
+const DEFAULT_CONTEXT_TOML_PATH: &str = "./context.toml";
+
 fn app() -> App<'static, 'static> {
-    App::new("tera-preprocessor")
+    App::new("mdbook-tera")
         .about("A mdbook preprocessor that renders tera")
+        .arg(
+            Arg::with_name("json")
+                .long("json")
+                .value_name("FILE")
+                .help("Sets JSON context")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("toml")
+                .long("toml")
+                .value_name("FILE")
+                .help("Sets TOML context")
+                .takes_value(true),
+        )
         .subcommand(
             SubCommand::with_name("supports")
                 .arg(Arg::with_name("renderer").required(true))
@@ -20,7 +37,25 @@ fn app() -> App<'static, 'static> {
 fn main() {
     let matches = app().get_matches();
 
-    let preprocessor = TeraPreprocessor::from_json_str(r#"{"users": ["jam"]}"#);
+    let preprocessor = match (matches.value_of("json"), matches.value_of("toml")) {
+        (Some(_), Some(_)) => panic!("cannot set both json and toml context"),
+        (Some(json_path), None) => {
+            let json_str = load_context_file(json_path);
+            TeraPreprocessor::from_json_str(json_str)
+        }
+        (None, Some(toml_path)) => {
+            let toml_str = load_context_file(toml_path);
+            TeraPreprocessor::from_toml_str(toml_str)
+        }
+        (None, None) => {
+            if Path::new(DEFAULT_CONTEXT_TOML_PATH).exists() {
+                let toml_str = load_context_file(DEFAULT_CONTEXT_TOML_PATH);
+                TeraPreprocessor::from_toml_str(toml_str)
+            } else {
+                TeraPreprocessor::default()
+            }
+        }
+    };
 
     if let Some(sub_args) = matches.subcommand_matches("supports") {
         handle_supports(&preprocessor, sub_args);
@@ -30,18 +65,23 @@ fn main() {
     }
 }
 
+fn load_context_file(path: &str) -> String {
+    fs::read_to_string(path).expect("failed to load context file")
+}
+
 fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
     let (ctx, book) = CmdPreprocessor::parse_input(io::stdin())?;
 
-    if ctx.mdbook_version != mdbook::MDBOOK_VERSION {
-        // We should probably use the `semver` crate to check compatibility
-        // here...
+    let ver = Version::parse(ctx.mdbook_version.as_str()).unwrap();
+    let ver_req = VersionReq::parse(mdbook::MDBOOK_VERSION).unwrap();
+
+    if !ver_req.matches(&ver) {
         eprintln!(
-            "Warning: The {} plugin was built against version {} of mdbook, \
+            "Warning: The {} plugin has the version requirement {} for mdbook, \
              but we're being called from version {}",
             pre.name(),
-            mdbook::MDBOOK_VERSION,
-            ctx.mdbook_version
+            ver_req,
+            ver
         );
     }
 
@@ -53,10 +93,8 @@ fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
 
 fn handle_supports(pre: &dyn Preprocessor, sub_args: &ArgMatches) -> ! {
     let renderer = sub_args.value_of("renderer").expect("Required argument");
-    let supported = pre.supports_renderer(&renderer);
 
-    // Signal whether the renderer is supported by exiting with 1 or 0.
-    if supported {
+    if pre.supports_renderer(&renderer) {
         process::exit(0);
     } else {
         process::exit(1);

@@ -1,0 +1,7 @@
+[book]
+authors = ["James Dyson"]
+language = "en"
+title = "Example Book"
+
+[preprocessor.tera]
+command = "cargo run -- --toml ./context.toml"
