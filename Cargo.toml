@@ -1,0 +1,12 @@
+[package]
+name = "mkbook-tera"
+version = "0.1.0"
+authors = ["avitex <theavitex@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+tera = "~1"
+toml = "~0.5"
+mdbook = "~0.3"
+serde = "~1"
+serde_json = "~1"
