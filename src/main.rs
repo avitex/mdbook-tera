@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::{fs, io, process};
 
-use clap::{App, Arg, ArgMatches, SubCommand};
+use clap::{App, Arg, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use semver::{Version, VersionReq};
@@ -37,6 +37,11 @@ fn app() -> App<'static, 'static> {
 fn main() {
     let matches = app().get_matches();
 
+    if let Some(_) = matches.subcommand_matches("supports") {
+        // We support every renderer.
+        process::exit(0);
+    }
+
     let preprocessor = match (matches.value_of("json"), matches.value_of("toml")) {
         (Some(_), Some(_)) => panic!("cannot set both json and toml context"),
         (Some(json_path), None) => {
@@ -57,9 +62,7 @@ fn main() {
         }
     };
 
-    if let Some(sub_args) = matches.subcommand_matches("supports") {
-        handle_supports(&preprocessor, sub_args);
-    } else if let Err(e) = handle_preprocessing(&preprocessor) {
+    if let Err(e) = handle_preprocessing(&preprocessor) {
         eprintln!("{}", e);
         process::exit(1);
     }
@@ -89,14 +92,4 @@ fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
     serde_json::to_writer(io::stdout(), &processed_book)?;
 
     Ok(())
-}
-
-fn handle_supports(pre: &dyn Preprocessor, sub_args: &ArgMatches) -> ! {
-    let renderer = sub_args.value_of("renderer").expect("Required argument");
-
-    if pre.supports_renderer(&renderer) {
-        process::exit(0);
-    } else {
-        process::exit(1);
-    }
 }
