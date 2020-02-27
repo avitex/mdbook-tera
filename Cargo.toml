@@ -3,6 +3,7 @@ name = "mdbook-tera"
 version = "0.1.0"
 authors = ["avitex <theavitex@gmail.com>"]
 edition = "2018"
+description = "Tera preprocessor for mdBook"
 documentation = "https://github.com/avitex/mdbook-tera"
 homepage = "https://github.com/avitex/mdbook-tera"
 repository = "https://github.com/avitex/mdbook-tera"
