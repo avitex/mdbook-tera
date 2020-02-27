@@ -14,22 +14,26 @@ enum Format {
     Toml,
 }
 
+/// A context source for the Tera preprocessor.
 #[derive(Clone)]
 pub struct ContextSource {
     context: Arc<Mutex<Context>>,
 }
 
 impl ContextSource {
+    /// Construct a context source given a tera context.
     pub fn new(context: Context) -> Self {
         Self {
             context: Arc::new(Mutex::new(context)),
         }
     }
 
+    /// Returns a context from the source.
     pub fn get_context(&self) -> Context {
         self.lock_context().clone()
     }
 
+    /// Construct a context source given a JSON path.
     pub fn from_json_file<P>(path: P, watch: bool) -> Result<Self, Error>
     where
         P: AsRef<Path>,
@@ -37,6 +41,7 @@ impl ContextSource {
         Self::from_file(path.as_ref(), Format::Json, watch)
     }
 
+    /// Construct a context source given a TOML path.
     pub fn from_toml_file<P>(path: P, watch: bool) -> Result<Self, Error>
     where
         P: AsRef<Path>,

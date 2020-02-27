@@ -2,7 +2,7 @@
 [![Crate](https://img.shields.io/crates/v/mdbook-tera.svg)](https://crates.io/crates/mdbook-tera)
 [![Docs](https://docs.rs/mdbook-tera/badge.svg)](https://docs.rs/mdbook-tera)
 
-# mkbook-tera
+# mdbook-tera
 
 **[Tera](https://github.com/Keats/tera) preprocessor for [mdBook](https://github.com/rust-lang/mdBook)**  
 API documentation hosted on [docs.rs](https://docs.rs/mdbook-tera).

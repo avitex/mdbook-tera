@@ -29,7 +29,7 @@ mod errors {
     }
 }
 
-/// A mdbook preprocessor that renders tera.
+/// A mdBook preprocessor that renders Tera.
 #[derive(Clone)]
 pub struct TeraPreprocessor {
     tera: Tera,
@@ -37,6 +37,7 @@ pub struct TeraPreprocessor {
 }
 
 impl TeraPreprocessor {
+    /// Construct a Tera preprocessor given a context source.
     pub fn new(context: ContextSource) -> Self {
         Self {
             context,
@@ -44,6 +45,7 @@ impl TeraPreprocessor {
         }
     }
 
+    /// Returns a mutable reference to the internal Tera engine.
     pub fn get_tera_mut(&mut self) -> &mut Tera {
         &mut self.tera
     }
