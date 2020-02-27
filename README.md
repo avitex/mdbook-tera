@@ -31,4 +31,4 @@ Then in your `book.toml` file, add the tera preprocessor as below.
 command = "mdbook-tera --json ./src/context.json"
 ```
 
-See the [example book](../example-book) for a basic usage.
+See `example-book` for a basic usage.
