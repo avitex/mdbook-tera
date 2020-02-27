@@ -7,7 +7,7 @@
 **[Tera](https://github.com/Keats/tera) preprocessor for [mdBook](https://github.com/rust-lang/mdBook)**  
 API documentation hosted on [docs.rs](https://docs.rs/mdbook-tera).
 
-```sh
+```text
 $ mdbook-tera --help
 mdbook-tera 0.2.0
 A mdBook preprocessor that renders Tera
@@ -34,7 +34,7 @@ SUBCOMMANDS:
 
 First install the tera preprocessor.
 
-```sh
+```text
 cargo install mdbook-tera
 ```
 
