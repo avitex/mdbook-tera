@@ -1,19 +1,24 @@
+mod context;
+
 use error_chain::ChainedError;
 use mdbook::book::{Book, BookItem};
 use mdbook::errors::{Error as BookError, ErrorKind as BookErrorKind};
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
-use serde::Serialize;
 use tera::{Context, Tera};
-use toml::Value as TomlValue;
 
-use self::errors::{Error, ErrorKind};
+pub use self::context::ContextSource;
+pub use self::errors::{Error, ErrorKind};
 
 mod errors {
     use error_chain::error_chain;
 
     error_chain! {
         foreign_links {
+            Io(::std::io::Error);
             Tera(::tera::Error);
+            Toml(::toml::de::Error);
+            Json(::serde_json::Error);
+            Notify(::notify::Error);
         }
 
         errors {
@@ -28,11 +33,11 @@ mod errors {
 #[derive(Clone)]
 pub struct TeraPreprocessor {
     tera: Tera,
-    context: Context,
+    context: ContextSource,
 }
 
 impl TeraPreprocessor {
-    pub fn new(context: Context) -> Self {
+    pub fn new(context: ContextSource) -> Self {
         Self {
             context,
             tera: Tera::default(),
@@ -41,22 +46,6 @@ impl TeraPreprocessor {
 
     pub fn get_tera_mut(&mut self) -> &mut Tera {
         &mut self.tera
-    }
-
-    pub fn from_json_str<S: AsRef<str>>(json_str: S) -> Self {
-        let value = json_str.as_ref().parse().expect("json context malformed");
-        let context = Context::from_value(value).expect("invalid tera context");
-        Self::new(context)
-    }
-
-    pub fn from_toml_str<S: AsRef<str>>(toml_str: S) -> Self {
-        let value: TomlValue = toml_str.as_ref().parse().expect("toml context malformed");
-        Self::from_serialize(value)
-    }
-
-    pub fn from_serialize(value: impl Serialize) -> Self {
-        let context = Context::from_serialize(value).expect("invalid tera context");
-        Self::new(context)
     }
 }
 
@@ -77,7 +66,7 @@ impl Preprocessor for TeraPreprocessor {
 
         let mut ctx = Context::new();
         ctx.insert("ctx", &book_ctx);
-        ctx.extend(self.context.clone());
+        ctx.extend(self.context.get_context());
 
         render_book_items(&mut book, &mut tera, &ctx)
             .map_err(|err| BookErrorKind::Msg(err.display_chain().to_string()))?;
@@ -103,10 +92,7 @@ fn collect_item_chapters<'a>(
     for item in items {
         match item {
             BookItem::Chapter(chapter) => {
-                let path = chapter
-                    .path
-                    .to_str()
-                    .ok_or(Error::from(ErrorKind::InvalidPath))?;
+                let path = chapter.path.to_str().ok_or(ErrorKind::InvalidPath)?;
                 templates.push((path, chapter.content.as_str()));
                 collect_item_chapters(templates, chapter.sub_items.as_slice())?;
             }
@@ -124,10 +110,7 @@ fn render_item_chapters(
     for item in items {
         match item {
             BookItem::Chapter(chapter) => {
-                let path = chapter
-                    .path
-                    .to_str()
-                    .ok_or(Error::from(ErrorKind::InvalidPath))?;
+                let path = chapter.path.to_str().ok_or(ErrorKind::InvalidPath)?;
                 chapter.content = tera.render(path, context)?;
                 render_item_chapters(tera, context, chapter.sub_items.as_mut_slice())?;
             }

@@ -4,4 +4,4 @@ language = "en"
 title = "Example Book"
 
 [preprocessor.tera]
-command = "cargo run -- --toml ./context.toml"
+command = "cargo run"

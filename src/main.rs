@@ -1,30 +1,37 @@
 use std::path::Path;
-use std::{fs, io, process};
+use std::{io, process};
 
 use clap::{App, Arg, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use semver::{Version, VersionReq};
 
-use mdbook_tera::TeraPreprocessor;
+use mdbook_tera::{ContextSource, TeraPreprocessor};
 
-const DEFAULT_CONTEXT_TOML_PATH: &str = "./context.toml";
+const DEFAULT_CONTEXT_TOML_PATH: &str = "./src/context.toml";
 
 fn app() -> App<'static, 'static> {
     App::new("mdbook-tera")
         .about("A mdbook preprocessor that renders tera")
         .arg(
+            Arg::with_name("watch")
+                .long("watch")
+                .value_name("BOOL")
+                .help("Reload the provided context file on change")
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("json")
                 .long("json")
                 .value_name("FILE")
-                .help("Sets JSON context")
+                .help("Sets JSON context file")
                 .takes_value(true),
         )
         .arg(
             Arg::with_name("toml")
                 .long("toml")
                 .value_name("FILE")
-                .help("Sets TOML context")
+                .help("Sets TOML context file")
                 .takes_value(true),
         )
         .subcommand(
@@ -37,39 +44,41 @@ fn app() -> App<'static, 'static> {
 fn main() {
     let matches = app().get_matches();
 
-    if let Some(_) = matches.subcommand_matches("supports") {
+    if matches.subcommand_matches("supports").is_some() {
         // We support every renderer.
         process::exit(0);
     }
 
-    let preprocessor = match (matches.value_of("json"), matches.value_of("toml")) {
-        (Some(_), Some(_)) => panic!("cannot set both json and toml context"),
-        (Some(json_path), None) => {
-            let json_str = load_context_file(json_path);
-            TeraPreprocessor::from_json_str(json_str)
-        }
-        (None, Some(toml_path)) => {
-            let toml_str = load_context_file(toml_path);
-            TeraPreprocessor::from_toml_str(toml_str)
-        }
-        (None, None) => {
-            if Path::new(DEFAULT_CONTEXT_TOML_PATH).exists() {
-                let toml_str = load_context_file(DEFAULT_CONTEXT_TOML_PATH);
-                TeraPreprocessor::from_toml_str(toml_str)
+    let ctx_src = match (
+        matches.value_of("json"),
+        matches.value_of("toml"),
+        matches.is_present("watch"),
+    ) {
+        (Some(_), Some(_), _) => exit_with_error("cannot set both json and toml context".into()),
+        (Some(json_path), None, watch) => ContextSource::from_json_file(json_path, watch),
+        (None, Some(toml_path), watch) => ContextSource::from_toml_file(toml_path, watch),
+        (None, None, watch) => {
+            let default_path = Path::new(DEFAULT_CONTEXT_TOML_PATH);
+            if default_path.exists() {
+                ContextSource::from_toml_file(default_path, watch)
             } else {
-                TeraPreprocessor::default()
+                Ok(ContextSource::default())
             }
         }
     };
 
-    if let Err(e) = handle_preprocessing(&preprocessor) {
-        eprintln!("{}", e);
-        process::exit(1);
-    }
-}
+    let ctx_src = match ctx_src {
+        Ok(ctx_src) => ctx_src,
+        Err(err) => {
+            exit_with_error(format!("failed to load context: {}", err));
+        }
+    };
 
-fn load_context_file(path: &str) -> String {
-    fs::read_to_string(path).expect("failed to load context file")
+    let preprocessor = TeraPreprocessor::new(ctx_src);
+
+    if let Err(err) = handle_preprocessing(&preprocessor) {
+        exit_with_error(err.to_string());
+    }
 }
 
 fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
@@ -92,4 +101,9 @@ fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
     serde_json::to_writer(io::stdout(), &processed_book)?;
 
     Ok(())
+}
+
+fn exit_with_error(err: String) -> ! {
+    eprintln!("{}", err);
+    process::exit(1);
 }

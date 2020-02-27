@@ -3,8 +3,13 @@ name = "mdbook-tera"
 version = "0.1.0"
 authors = ["avitex <theavitex@gmail.com>"]
 edition = "2018"
+documentation = "https://github.com/avitex/mdbook-tera"
+homepage = "https://github.com/avitex/mdbook-tera"
+repository = "https://github.com/avitex/mdbook-tera"
+license = "MIT"
 
 [dependencies]
+notify = "5.0.0-pre.2"
 clap = "~2"
 tera = "~1"
 toml = "~0.5"
