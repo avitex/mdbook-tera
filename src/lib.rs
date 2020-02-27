@@ -1,6 +1,9 @@
 mod context;
 
+use std::path::{Path, PathBuf};
+
 use error_chain::ChainedError;
+use glob::glob;
 use mdbook::book::{Book, BookItem};
 use mdbook::errors::{Error as BookError, ErrorKind as BookErrorKind};
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
@@ -16,6 +19,7 @@ mod errors {
         foreign_links {
             Io(::std::io::Error);
             Tera(::tera::Error);
+            Glob(::glob::PatternError);
             Toml(::toml::de::Error);
             Json(::serde_json::Error);
             Notify(::notify::Error);
@@ -43,6 +47,37 @@ impl TeraPreprocessor {
             context,
             tera: Tera::default(),
         }
+    }
+
+    /// Includes tera templates given a glob pattern and a root directory.
+    pub fn include_templates<P>(&mut self, root: P, glob_str: &str) -> Result<(), Error>
+    where
+        P: AsRef<Path>,
+    {
+        let root = root.as_ref().canonicalize()?;
+        let glob_with_root = root.join(glob_str);
+        let glob_with_root = glob_with_root.to_string_lossy().to_owned();
+
+        let paths: Vec<(PathBuf, String)> = glob(glob_with_root.as_ref())?
+            .filter_map(|r| r.ok())
+            .filter_map(|p| {
+                if let Ok(name) = p.strip_prefix(root.as_path()) {
+                    let name = name.to_string_lossy().into();
+                    Some((p, name))
+                } else {
+                    None
+                }
+            })
+            .collect();
+
+        let path_refs = paths
+            .iter()
+            .map(|(p, n)| (p.as_path(), Some(n.as_str())))
+            .collect();
+
+        self.tera.add_template_files(path_refs)?;
+
+        Ok(())
     }
 
     /// Returns a mutable reference to the internal Tera engine.
