@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/avitex/mdbook-tera.svg)](https://travis-ci.org/avitex/mdbook-tera)
+[![Build Status](https://travis-ci.com/avitex/mdbook-tera.svg?branch=master)](https://travis-ci.com/avitex/mdbook-tera)
 [![Crate](https://img.shields.io/crates/v/mdbook-tera.svg)](https://crates.io/crates/mdbook-tera)
 [![Docs](https://docs.rs/mdbook-tera/badge.svg)](https://docs.rs/mdbook-tera)
 
