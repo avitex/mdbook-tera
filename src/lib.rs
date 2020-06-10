@@ -1,48 +1,42 @@
 mod context;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use error_chain::ChainedError;
-use glob::glob;
+use globwalk::GlobWalkerBuilder;
 use mdbook::book::{Book, BookItem};
 use mdbook::errors::{Error as BookError, ErrorKind as BookErrorKind};
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use tera::{Context, Tera};
+use thiserror::Error;
 
-pub use self::context::ContextSource;
-pub use self::errors::{Error, ErrorKind};
+pub use self::context::{ContextSource, StaticContextSource};
 
-mod errors {
-    use error_chain::error_chain;
-
-    error_chain! {
-        foreign_links {
-            Io(::std::io::Error);
-            Tera(::tera::Error);
-            Glob(::glob::PatternError);
-            Toml(::toml::de::Error);
-            Json(::serde_json::Error);
-            Notify(::notify::Error);
-        }
-
-        errors {
-            InvalidPath
-        }
-
-        skip_msg_variant
-    }
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("{0:?}")]
+    Io(#[from] ::std::io::Error),
+    #[error("{0:?}")]
+    Tera(#[from] ::tera::Error),
+    #[error("{0:?}")]
+    Glob(#[from] ::globwalk::GlobError),
+    #[error("{0:?}")]
+    Toml(#[from] ::toml::de::Error),
+    #[error("{0:?}")]
+    Json(#[from] ::serde_json::Error),
+    #[error("invalid path")]
+    InvalidPath,
 }
 
 /// A mdBook preprocessor that renders Tera.
 #[derive(Clone)]
-pub struct TeraPreprocessor {
+pub struct TeraPreprocessor<C = StaticContextSource> {
     tera: Tera,
-    context: ContextSource,
+    context: C,
 }
 
-impl TeraPreprocessor {
+impl<C> TeraPreprocessor<C> {
     /// Construct a Tera preprocessor given a context source.
-    pub fn new(context: ContextSource) -> Self {
+    pub fn new(context: C) -> Self {
         Self {
             context,
             tera: Tera::default(),
@@ -55,44 +49,37 @@ impl TeraPreprocessor {
         P: AsRef<Path>,
     {
         let root = root.as_ref().canonicalize()?;
-        let glob_with_root = root.join(glob_str);
-        let glob_with_root = glob_with_root.to_string_lossy().to_owned();
 
-        let paths: Vec<(PathBuf, String)> = glob(glob_with_root.as_ref())?
+        let paths = GlobWalkerBuilder::from_patterns(root, &[glob_str])
+            .build()?
             .filter_map(|r| r.ok())
             .filter_map(|p| {
-                if let Ok(name) = p.strip_prefix(root.as_path()) {
-                    let name = name.to_string_lossy().into();
-                    Some((p, name))
-                } else {
-                    None
-                }
-            })
-            .collect();
+                let path = p.into_path();
+                let name = path.to_string_lossy().into_owned();
+                Some((path, Some(name)))
+            });
 
-        let path_refs = paths
-            .iter()
-            .map(|(p, n)| (p.as_path(), Some(n.as_str())))
-            .collect();
-
-        self.tera.add_template_files(path_refs)?;
+        self.tera.add_template_files(paths)?;
 
         Ok(())
     }
 
     /// Returns a mutable reference to the internal Tera engine.
-    pub fn get_tera_mut(&mut self) -> &mut Tera {
+    pub fn tera_mut(&mut self) -> &mut Tera {
         &mut self.tera
     }
 }
 
-impl Default for TeraPreprocessor {
+impl<C: Default> Default for TeraPreprocessor<C> {
     fn default() -> Self {
         Self::new(Default::default())
     }
 }
 
-impl Preprocessor for TeraPreprocessor {
+impl<C> Preprocessor for TeraPreprocessor<C>
+where
+    C: ContextSource,
+{
     fn name(&self) -> &str {
         "tera"
     }
@@ -103,10 +90,10 @@ impl Preprocessor for TeraPreprocessor {
 
         let mut ctx = Context::new();
         ctx.insert("ctx", &book_ctx);
-        ctx.extend(self.context.get_context());
+        ctx.extend(self.context.context());
 
         render_book_items(&mut book, &mut tera, &ctx)
-            .map_err(|err| BookErrorKind::Msg(err.display_chain().to_string()))?;
+            .map_err(|err| BookErrorKind::Msg(err.to_string()))?;
 
         Ok(book)
     }
@@ -129,7 +116,7 @@ fn collect_item_chapters<'a>(
     for item in items {
         match item {
             BookItem::Chapter(chapter) => {
-                let path = chapter.path.to_str().ok_or(ErrorKind::InvalidPath)?;
+                let path = chapter.path.to_str().ok_or(Error::InvalidPath)?;
                 templates.push((path, chapter.content.as_str()));
                 collect_item_chapters(templates, chapter.sub_items.as_slice())?;
             }
@@ -147,7 +134,7 @@ fn render_item_chapters(
     for item in items {
         match item {
             BookItem::Chapter(chapter) => {
-                let path = chapter.path.to_str().ok_or(ErrorKind::InvalidPath)?;
+                let path = chapter.path.to_str().ok_or(Error::InvalidPath)?;
                 chapter.content = tera.render(path, context)?;
                 render_item_chapters(tera, context, chapter.sub_items.as_mut_slice())?;
             }

@@ -6,7 +6,7 @@ use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use semver::{Version, VersionReq};
 
-use mdbook_tera::{ContextSource, TeraPreprocessor};
+use mdbook_tera::{StaticContextSource, TeraPreprocessor};
 
 const DEFAULT_CONTEXT_TOML_PATH: &str = "./src/context.toml";
 const DEFAULT_TEMPLATE_ROOT: &str = "./src";
@@ -62,14 +62,14 @@ fn main() {
 
     let ctx_src = match (matches.value_of("json"), matches.value_of("toml")) {
         (Some(_), Some(_)) => exit_with_error("cannot set both json and toml context".into()),
-        (Some(json_path), None) => ContextSource::from_json_file(json_path, false),
-        (None, Some(toml_path)) => ContextSource::from_toml_file(toml_path, false),
+        (Some(json_path), None) => StaticContextSource::from_json_file(json_path),
+        (None, Some(toml_path)) => StaticContextSource::from_toml_file(toml_path),
         (None, None) => {
             let default_path = Path::new(DEFAULT_CONTEXT_TOML_PATH);
             if default_path.exists() {
-                ContextSource::from_toml_file(default_path, false)
+                StaticContextSource::from_toml_file(default_path)
             } else {
-                Ok(ContextSource::default())
+                Ok(StaticContextSource::default())
             }
         }
     };

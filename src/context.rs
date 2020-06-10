@@ -1,12 +1,14 @@
 use std::fs;
 use std::path::Path;
-use std::sync::{Arc, Mutex, MutexGuard};
-
-use notify::{Event, EventFn, RecommendedWatcher, RecursiveMode, Watcher};
 
 pub use tera::Context;
 
-use crate::errors::{Error, ErrorKind};
+use crate::Error;
+
+pub trait ContextSource {
+    /// Returns a context from the source.
+    fn context(&self) -> Context;
+}
 
 #[derive(Clone, Copy)]
 enum Format {
@@ -16,76 +18,45 @@ enum Format {
 
 /// A context source for the Tera preprocessor.
 #[derive(Clone)]
-pub struct ContextSource {
-    context: Arc<Mutex<Context>>,
+pub struct StaticContextSource {
+    context: Context,
 }
 
-impl ContextSource {
+impl ContextSource for StaticContextSource {
+    fn context(&self) -> Context {
+        self.context.clone()
+    }
+}
+
+impl StaticContextSource {
     /// Construct a context source given a tera context.
     pub fn new(context: Context) -> Self {
-        Self {
-            context: Arc::new(Mutex::new(context)),
-        }
-    }
-
-    /// Returns a context from the source.
-    pub fn get_context(&self) -> Context {
-        self.lock_context().clone()
+        Self { context }
     }
 
     /// Construct a context source given a JSON path.
-    pub fn from_json_file<P>(path: P, watch: bool) -> Result<Self, Error>
+    pub fn from_json_file<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,
     {
-        Self::from_file(path.as_ref(), Format::Json, watch)
+        Self::from_file(path.as_ref(), Format::Json)
     }
 
     /// Construct a context source given a TOML path.
-    pub fn from_toml_file<P>(path: P, watch: bool) -> Result<Self, Error>
+    pub fn from_toml_file<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,
     {
-        Self::from_file(path.as_ref(), Format::Toml, watch)
+        Self::from_file(path.as_ref(), Format::Toml)
     }
 
-    fn from_file(path: &Path, format: Format, watch: bool) -> Result<Self, Error> {
-        let this = if watch {
-            let this = Self::from_file(path, format, false)?;
-            let this_clone = this.clone();
-            let path_buf = path.to_owned();
-            let parent_path = path.parent().ok_or(ErrorKind::InvalidPath)?;
-            watch_path(parent_path, move |res: Result<Event, _>| {
-                match res {
-                    Ok(event) => {
-                        if !event.paths.contains(&path_buf) {
-                            return;
-                        }
-                        match load_context_file(path_buf.as_ref(), format) {
-                            Ok(ctx) => {
-                                *this_clone.lock_context() = ctx;
-                                eprintln!("context reloaded");
-                            }
-                            Err(err) => eprintln!("failed to reload context: {:?}", err),
-                        }
-                    }
-                    Err(e) => eprintln!("watch error: {:?}", e),
-                };
-            })?;
-            this
-        } else {
-            let ctx = load_context_file(path, format)?;
-            Self::new(ctx)
-        };
-        Ok(this)
-    }
-
-    fn lock_context(&self) -> MutexGuard<Context> {
-        self.context.lock().expect("context lock poisoned")
+    fn from_file(path: &Path, format: Format) -> Result<Self, Error> {
+        let ctx = load_context_file(path, format)?;
+        Ok(Self::new(ctx))
     }
 }
 
-impl Default for ContextSource {
+impl Default for StaticContextSource {
     fn default() -> Self {
         Self::new(Context::default())
     }
@@ -108,13 +79,4 @@ fn from_json_str(json_str: &str) -> Result<Context, Error> {
 fn from_toml_str(toml_str: &str) -> Result<Context, Error> {
     let value: toml::Value = toml_str.parse()?;
     Ok(Context::from_serialize(value)?)
-}
-
-fn watch_path<F>(path: &Path, event_fn: F) -> Result<(), Error>
-where
-    F: EventFn,
-{
-    let mut watcher: RecommendedWatcher = Watcher::new_immediate(event_fn)?;
-    watcher.watch(path, RecursiveMode::NonRecursive)?;
-    Ok(())
 }
