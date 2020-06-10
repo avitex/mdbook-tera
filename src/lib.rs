@@ -13,15 +13,15 @@ pub use self::context::{ContextSource, StaticContextSource};
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("{0:?}")]
+    #[error("{0}")]
     Io(#[from] ::std::io::Error),
-    #[error("{0:?}")]
+    #[error("{0}")]
     Tera(#[from] ::tera::Error),
-    #[error("{0:?}")]
+    #[error("{0}")]
     Glob(#[from] ::globwalk::GlobError),
-    #[error("{0:?}")]
+    #[error("{0}")]
     Toml(#[from] ::toml::de::Error),
-    #[error("{0:?}")]
+    #[error("{0}")]
     Json(#[from] ::serde_json::Error),
     #[error("invalid path")]
     InvalidPath,
@@ -48,14 +48,18 @@ impl<C> TeraPreprocessor<C> {
     where
         P: AsRef<Path>,
     {
-        let root = root.as_ref().canonicalize()?;
+        let root = &root.as_ref().canonicalize()?;
 
         let paths = GlobWalkerBuilder::from_patterns(root, &[glob_str])
             .build()?
             .filter_map(|r| r.ok())
             .filter_map(|p| {
                 let path = p.into_path();
-                let name = path.to_string_lossy().into_owned();
+                let name = path
+                    .strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned();
                 Some((path, Some(name)))
             });
 
