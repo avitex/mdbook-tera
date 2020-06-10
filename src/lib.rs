@@ -11,6 +11,7 @@ use thiserror::Error;
 
 pub use self::context::{ContextSource, StaticContextSource};
 
+/// An error produced from a tera preprocessor or context source.
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("{0}")]
@@ -20,8 +21,10 @@ pub enum Error {
     #[error("{0}")]
     Glob(#[from] ::globwalk::GlobError),
     #[error("{0}")]
+    #[cfg(any(feature = "toml"))]
     Toml(#[from] ::toml::de::Error),
     #[error("{0}")]
+    #[cfg(any(feature = "json"))]
     Json(#[from] ::serde_json::Error),
     #[error("invalid path")]
     InvalidPath,
