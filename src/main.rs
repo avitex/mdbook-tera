@@ -1,6 +1,7 @@
 use std::path::Path;
 use std::{io, process};
 
+use anyhow::anyhow;
 use clap::{App, Arg, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
@@ -56,12 +57,12 @@ fn main() {
     let matches = app().get_matches();
 
     if matches.subcommand_matches("supports").is_some() {
-        // We support every renderer.
+        // We support every renderer
         process::exit(0);
     }
 
     let ctx_src = match (matches.value_of("json"), matches.value_of("toml")) {
-        (Some(_), Some(_)) => exit_with_error("cannot set both json and toml context".into()),
+        (Some(_), Some(_)) => exit_with_error(anyhow!("cannot set both json and toml context")),
         (Some(json_path), None) => StaticContextSource::from_json_file(json_path),
         (None, Some(toml_path)) => StaticContextSource::from_toml_file(toml_path),
         (None, None) => {
@@ -77,7 +78,7 @@ fn main() {
     let ctx_src = match ctx_src {
         Ok(ctx_src) => ctx_src,
         Err(err) => {
-            exit_with_error(format!("failed to load context: {}", err));
+            exit_with_error(anyhow!("failed to load context: {}", err));
         }
     };
 
@@ -90,13 +91,13 @@ fn main() {
 
         if glob_str != "false" {
             if let Err(err) = preprocessor.include_templates(root_dir, glob_str) {
-                exit_with_error(err.to_string());
+                exit_with_error(anyhow!(err));
             }
         }
     }
 
     if let Err(err) = handle_preprocessing(&preprocessor) {
-        exit_with_error(err.to_string());
+        exit_with_error(anyhow!(err));
     }
 }
 
@@ -122,7 +123,7 @@ fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
     Ok(())
 }
 
-fn exit_with_error(err: String) -> ! {
-    eprintln!("{}", err);
+fn exit_with_error(err: Error) -> ! {
+    eprintln!("{:?}", err);
     process::exit(1);
 }
