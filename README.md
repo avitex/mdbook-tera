@@ -1,5 +1,4 @@
 [![Build Status](https://github.com/avitex/mdbook-tera/workflows/build/badge.svg)](https://github.com/avitex/mdbook-tera/actions?query=workflow:build)
-[![Coverage Status](https://codecov.io/gh/avitex/mdbook-tera/branch/master/graph/badge.svg?token=X2LXHI8VYL)](https://codecov.io/gh/avitex/mdbook-tera)
 [![Crate](https://img.shields.io/crates/v/mdbook-tera.svg)](https://crates.io/crates/mdbook-tera)
 [![Docs](https://docs.rs/mdbook-tera/badge.svg)](https://docs.rs/mdbook-tera)
 

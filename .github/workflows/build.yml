@@ -37,19 +37,3 @@ jobs:
       - name: Lint code
         if: ${{ matrix.rust-toolchain == 'stable' }}
         run: cargo fmt -- --check && cargo clippy --all-features
-  code_coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install Rust nightly components
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          components: llvm-tools-preview
-      - uses: Swatinem/fucov@v1
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
