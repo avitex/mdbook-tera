@@ -20,7 +20,7 @@ required-features = ["toml", "json"]
 [dependencies]
 clap = "~2"
 anyhow = "~1"
-tera = "^1.5.0"
+tera = "<1.14.0"
 mdbook = "0.4"
 serde = "~1"
 globwalk = "0.8"
