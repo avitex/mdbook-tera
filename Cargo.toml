@@ -4,10 +4,14 @@ version = "0.4.0"
 authors = ["avitex <avitex@wfxlabs.com>"]
 edition = "2018"
 description = "Tera preprocessor for mdBook"
-documentation = "https://github.com/avitex/mdbook-tera"
+keywords = ["mdbook", "tera", "preprocessor"]
+categories = ["command-line-utilities", "template-engine"]
+documentation = "https://docs.rs/mdbook-tera"
 homepage = "https://github.com/avitex/mdbook-tera"
 repository = "https://github.com/avitex/mdbook-tera"
 license = "MIT"
+readme = "README.md"
+include = ["src/**/*", "README.md", "LICENSE", "Cargo.lock", "Cargo.toml"]
 
 [features]
 default = ["toml", "json"]

@@ -1,3 +1,13 @@
+#![deny(
+    warnings,
+    rustdoc::all,
+    clippy::all,
+    clippy::cargo,
+    clippy::nursery,
+    clippy::pedantic
+)]
+#![allow(rustdoc::missing_doc_code_examples, clippy::module_name_repetitions)]
+
 mod context;
 
 use std::path::Path;
@@ -28,6 +38,13 @@ impl<C> TeraPreprocessor<C> {
     }
 
     /// Includes Tera templates given a glob pattern and a root directory.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provided path cannot be canonicalized or the
+    /// inheritance chain can't be built, such as adding a child template
+    /// without the parent one.
+    #[allow(clippy::missing_panics_doc)]
     pub fn include_templates<P>(&mut self, root: P, glob_str: &str) -> Result<(), Error>
     where
         P: AsRef<Path>,
@@ -36,7 +53,7 @@ impl<C> TeraPreprocessor<C> {
 
         let paths = GlobWalkerBuilder::from_patterns(root, &[glob_str])
             .build()?
-            .filter_map(|r| r.ok())
+            .filter_map(Result::ok)
             .map(|p| {
                 let path = p.into_path();
                 let name = path

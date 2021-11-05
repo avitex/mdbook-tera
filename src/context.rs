@@ -28,11 +28,16 @@ impl ContextSource for StaticContextSource {
 
 impl StaticContextSource {
     /// Construct a context source given a tera context.
-    pub fn new(context: Context) -> Self {
+    #[must_use]
+    pub const fn new(context: Context) -> Self {
         Self { context }
     }
 
     /// Construct a context source given a JSON path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provided path or JSON read is invalid.
     #[cfg(feature = "json")]
     pub fn from_json_file<P>(path: P) -> Result<Self, Error>
     where
@@ -45,6 +50,10 @@ impl StaticContextSource {
     }
 
     /// Construct a context source given a TOML path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provided path or TOML read is invalid.
     #[cfg(feature = "toml")]
     pub fn from_toml_file<P>(path: P) -> Result<Self, Error>
     where
