@@ -6,7 +6,9 @@
     clippy::nursery,
     clippy::pedantic
 )]
-#![allow(rustdoc::missing_doc_code_examples, clippy::module_name_repetitions)]
+#![allow(clippy::module_name_repetitions)]
+#![cfg_attr(doc, deny(rustdoc::all))]
+#![cfg_attr(doc, allow(rustdoc::missing_doc_code_examples))]
 
 mod context;
 
