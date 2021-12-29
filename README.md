@@ -9,7 +9,7 @@ API documentation hosted on [docs.rs](https://docs.rs/mdbook-tera).
 
 ```text
 $ mdbook-tera --help
-mdbook-tera 0.4.1
+mdbook-tera 0.4.2
 A mdBook preprocessor that renders Tera
 
 USAGE:
