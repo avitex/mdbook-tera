@@ -5,7 +5,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        rust-toolchain: [stable, nightly]
+        rust-toolchain: [stable]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
