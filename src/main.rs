@@ -2,7 +2,7 @@ use std::path::Path;
 use std::{io, process};
 
 use anyhow::anyhow;
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use semver::{Version, VersionReq};
@@ -12,26 +12,26 @@ use mdbook_tera::{StaticContextSource, TeraPreprocessor};
 const DEFAULT_CONTEXT_TOML_PATH: &str = "./src/context.toml";
 const DEFAULT_TEMPLATE_ROOT: &str = "./src";
 
-fn app() -> App<'static, 'static> {
+fn app() -> App<'static> {
     App::new("mdbook-tera")
         .about("A mdBook preprocessor that renders Tera")
         .version(env!("CARGO_PKG_VERSION"))
         .arg(
-            Arg::with_name("json")
+            Arg::new("json")
                 .long("json")
                 .value_name("FILE")
                 .help("Sets context from JSON file")
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("toml")
+            Arg::new("toml")
                 .long("toml")
                 .value_name("FILE")
                 .help("Sets context from TOML file")
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("template-root")
+            Arg::new("template-root")
                 .long("template-root")
                 .value_name("PATH")
                 .help("Root directory to include templates from")
@@ -39,7 +39,7 @@ fn app() -> App<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("template-include")
+            Arg::new("template-include")
                 .long("template-include")
                 .value_name("GLOB")
                 .help("Include tera templates matching a glob expression")
@@ -47,8 +47,8 @@ fn app() -> App<'static, 'static> {
                 .takes_value(true),
         )
         .subcommand(
-            SubCommand::with_name("supports")
-                .arg(Arg::with_name("renderer").required(true))
+            App::new("supports")
+                .arg(Arg::new("renderer").required(true))
                 .about("Check whether a renderer is supported by this preprocessor"),
         )
 }
