@@ -9,24 +9,23 @@ API documentation hosted on [docs.rs](https://docs.rs/mdbook-tera).
 
 ```text
 $ mdbook-tera --help
-mdbook-tera 0.4.2
+mdbook-tera 0.5.0
 A mdBook preprocessor that renders Tera
 
 USAGE:
     mdbook-tera [OPTIONS] [SUBCOMMAND]
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
 OPTIONS:
+    -h, --help                       Print help information
         --json <FILE>                Sets context from JSON file
-        --template-include <GLOB>    Include tera templates matching a glob expression [default: **/*.tera]
+        --template-include <GLOB>    Include tera templates matching a glob expression [default:
+                                     **/*.tera]
         --template-root <PATH>       Root directory to include templates from [default: ./src]
         --toml <FILE>                Sets context from TOML file
+    -V, --version                    Print version information
 
 SUBCOMMANDS:
-    help        Prints this message or the help of the given subcommand(s)
+    help        Print this message or the help of the given subcommand(s)
     supports    Check whether a renderer is supported by this preprocessor
 ```
 
