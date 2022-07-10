@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-tera"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["avitex <avitex@wfxlabs.com>"]
 edition = "2018"
 description = "Tera preprocessor for mdBook"
