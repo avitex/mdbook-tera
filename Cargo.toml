@@ -26,7 +26,7 @@ clap = "~3"
 serde = "~1"
 anyhow = "~1"
 semver = "~1"
-tera = "^1.5.0"
+tera = "^1.17.1"
 globwalk = "0.8"
 mdbook = { version = "0.4", default-features = false }
 
