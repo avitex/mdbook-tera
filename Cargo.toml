@@ -22,7 +22,7 @@ name = "mdbook-tera"
 required-features = ["toml", "json"]
 
 [dependencies]
-clap = "~3"
+clap = "~4"
 serde = "~1"
 anyhow = "~1"
 semver = "~1"
