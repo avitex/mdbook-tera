@@ -127,13 +127,13 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "3.2.8"
+version = "3.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "190814073e85d238f31ff738fcb0bf6910cedeb73376c87cd69291028966fd83"
+checksum = "71655c45cb9845d3270c9d6df84ebe72b4dad3c2ba3f7023ad47c144e4e473a5"
 dependencies = [
  "atty",
  "bitflags",
- "clap_lex",
+ "clap_lex 0.2.4",
  "indexmap",
  "once_cell",
  "strsim",
@@ -142,12 +142,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap"
+version = "4.0.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2148adefda54e14492fb9bddcc600b4344c5d1a3123bd666dcb939c6f0e0e57e"
+dependencies = [
+ "atty",
+ "bitflags",
+ "clap_lex 0.3.0",
+ "strsim",
+ "termcolor",
+]
+
+[[package]]
 name = "clap_complete"
 version = "3.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ead064480dfc4880a10764488415a97fdd36a4cf1bb022d372f02e8faf8386e1"
 dependencies = [
- "clap",
+ "clap 3.2.23",
 ]
 
 [[package]]
@@ -155,6 +168,15 @@ name = "clap_lex"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
+dependencies = [
+ "os_str_bytes",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
 dependencies = [
  "os_str_bytes",
 ]
@@ -381,7 +403,7 @@ checksum = "fe2468f3c25ca56d4e9e309b94a1a61626aa2a66a68d0649477f6a9fb14de972"
 dependencies = [
  "anyhow",
  "chrono",
- "clap",
+ "clap 3.2.23",
  "clap_complete",
  "env_logger",
  "handlebars",
@@ -404,7 +426,7 @@ name = "mdbook-tera"
 version = "0.5.1"
 dependencies = [
  "anyhow",
- "clap",
+ "clap 4.0.26",
  "globwalk",
  "mdbook",
  "semver",
@@ -819,9 +841,9 @@ dependencies = [
 
 [[package]]
 name = "textwrap"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1141d4d61095b28419e22cb0bbf02755f5e54e0526f97f1e3d1d160e60885fb"
+checksum = "222a222a5bfe1bba4a77b45ec488a741b3cb8872e5e499451fd7d0129c9c7c3d"
 
 [[package]]
 name = "thiserror"
