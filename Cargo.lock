@@ -375,9 +375,9 @@ checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "mdbook"
-version = "0.4.19"
+version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe2468f3c25ca56d4e9e309b94a1a61626aa2a66a68d0649477f6a9fb14de972"
+checksum = "6b61566b406cbd75d81c634763d6c90779ca9db80202921c884348d172ada70d"
 dependencies = [
  "anyhow",
  "chrono",
@@ -385,9 +385,9 @@ dependencies = [
  "clap_complete",
  "env_logger",
  "handlebars",
- "lazy_static",
  "log",
  "memchr",
+ "once_cell",
  "opener",
  "pulldown-cmark",
  "regex",
