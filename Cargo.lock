@@ -186,9 +186,9 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.9.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
+checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
 dependencies = [
  "atty",
  "humantime",
@@ -299,9 +299,12 @@ checksum = "02296996cb8796d7c6e3bc2d9211b7802812d36999a51bb754123ead7d37d026"
 
 [[package]]
 name = "humantime"
-version = "2.1.0"
+version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+checksum = "df004cfca50ef23c36850aaaa59ad52cc70d0e90243c3c7737a4dd32dc7a3c4f"
+dependencies = [
+ "quick-error",
+]
 
 [[package]]
 name = "ignore"
@@ -375,9 +378,9 @@ checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
 name = "mdbook"
-version = "0.4.19"
+version = "0.4.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe2468f3c25ca56d4e9e309b94a1a61626aa2a66a68d0649477f6a9fb14de972"
+checksum = "74612ae81a3e5ee509854049dfa4c7975ae033c06f5fc4735c7dfbe60ee2a39d"
 dependencies = [
  "anyhow",
  "chrono",
@@ -392,6 +395,7 @@ dependencies = [
  "pulldown-cmark",
  "regex",
  "serde",
+ "serde_derive",
  "serde_json",
  "shlex",
  "tempfile",
@@ -591,6 +595,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "quick-error"
+version = "1.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
+
+[[package]]
 name = "quote"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -693,12 +703,9 @@ checksum = "a2333e6df6d6598f2b1974829f853c2b4c5f4a6e503c10af918081aa6f8564e1"
 
 [[package]]
 name = "serde"
-version = "1.0.138"
+version = "1.0.154"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1578c6245786b9d168c5447eeacfb96856573ca56c9d68fdcf394be134882a47"
-dependencies = [
- "serde_derive",
-]
+checksum = "8cdd151213925e7f1ab45a9bbfb129316bd00799784b174b7cc7bcd16961c49e"
 
 [[package]]
 name = "serde_derive"
