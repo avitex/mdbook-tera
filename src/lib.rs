@@ -127,8 +127,8 @@ fn collect_item_chapters<'a>(
                         .to_str()
                         .ok_or_else(|| anyhow!("invalid chapter path"))?;
                     templates.push((path, chapter.content.as_str()));
-                    collect_item_chapters(templates, chapter.sub_items.as_slice())?;
                 }
+                collect_item_chapters(templates, chapter.sub_items.as_slice())?;
             }
             BookItem::PartTitle(_) | BookItem::Separator => (),
         }
@@ -149,8 +149,8 @@ fn render_item_chapters(
                         .to_str()
                         .ok_or_else(|| anyhow!("invalid chapter path"))?;
                     chapter.content = tera.render(path, context)?;
-                    render_item_chapters(tera, context, chapter.sub_items.as_mut_slice())?;
                 }
+                render_item_chapters(tera, context, chapter.sub_items.as_mut_slice())?;
             }
             BookItem::PartTitle(_) | BookItem::Separator => (),
         }
