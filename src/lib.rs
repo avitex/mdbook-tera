@@ -6,7 +6,7 @@
     clippy::nursery,
     clippy::pedantic
 )]
-#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::module_name_repetitions, clippy::multiple_crate_versions)]
 #![cfg_attr(doc, deny(rustdoc::all))]
 #![cfg_attr(doc, allow(rustdoc::missing_doc_code_examples))]
 
@@ -60,7 +60,7 @@ impl<C> TeraPreprocessor<C> {
                 let path = p.into_path();
                 let name = path
                     .strip_prefix(root)
-                    .unwrap()
+                    .expect("failed to strip root path prefix")
                     .to_string_lossy()
                     .replace('\\', "/");
                 (path, Some(name))
@@ -72,7 +72,7 @@ impl<C> TeraPreprocessor<C> {
     }
 
     /// Returns a mutable reference to the internal Tera engine.
-    pub fn tera_mut(&mut self) -> &mut Tera {
+    pub const fn tera_mut(&mut self) -> &mut Tera {
         &mut self.tera
     }
 }
@@ -87,7 +87,7 @@ impl<C> Preprocessor for TeraPreprocessor<C>
 where
     C: ContextSource,
 {
-    fn name(&self) -> &str {
+    fn name(&self) -> &'static str {
         "tera"
     }
 
