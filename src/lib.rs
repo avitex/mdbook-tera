@@ -1,14 +1,11 @@
 #![deny(
     warnings,
-    rustdoc::all,
     clippy::all,
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic
 )]
 #![allow(clippy::module_name_repetitions, clippy::multiple_crate_versions)]
-#![cfg_attr(doc, deny(rustdoc::all))]
-#![cfg_attr(doc, allow(rustdoc::missing_doc_code_examples))]
 
 mod context;
 
