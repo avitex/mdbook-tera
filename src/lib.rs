@@ -62,7 +62,7 @@ impl<C> TeraPreprocessor<C> {
                     .strip_prefix(root)
                     .unwrap()
                     .to_string_lossy()
-                    .into_owned();
+                    .replace('\\', "/");
                 (path, Some(name))
             });
 
