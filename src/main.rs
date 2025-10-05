@@ -1,8 +1,8 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::{io, process};
 
 use anyhow::anyhow;
-use clap::{App, Arg};
+use clap::Parser;
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use semver::{Version, VersionReq};
@@ -12,56 +12,40 @@ use mdbook_tera::{StaticContextSource, TeraPreprocessor};
 const DEFAULT_CONTEXT_TOML_PATH: &str = "./src/context.toml";
 const DEFAULT_TEMPLATE_ROOT: &str = "./src";
 
-fn app() -> App<'static> {
-    App::new("mdbook-tera")
-        .about("A mdBook preprocessor that renders Tera")
-        .version(env!("CARGO_PKG_VERSION"))
-        .arg(
-            Arg::new("json")
-                .long("json")
-                .value_name("FILE")
-                .help("Sets context from JSON file")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("toml")
-                .long("toml")
-                .value_name("FILE")
-                .help("Sets context from TOML file")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("template-root")
-                .long("template-root")
-                .value_name("PATH")
-                .help("Root directory to include templates from")
-                .default_value(DEFAULT_TEMPLATE_ROOT)
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new("template-include")
-                .long("template-include")
-                .value_name("GLOB")
-                .help("Include tera templates matching a glob expression")
-                .default_value("**/*.tera")
-                .takes_value(true),
-        )
-        .subcommand(
-            App::new("supports")
-                .arg(Arg::new("renderer").required(true))
-                .about("Check whether a renderer is supported by this preprocessor"),
-        )
+#[derive(Parser)]
+#[clap(version, about)]
+struct Args {
+    /// Sets context from JSON file
+    #[clap(long, value_name = "FILE")]
+    json: Option<PathBuf>,
+    /// Sets context from TOML file
+    #[clap(long, value_name = "FILE")]
+    toml: Option<PathBuf>,
+    /// Root directory to include templates from
+    #[clap(long, value_name = "PATH", default_value = DEFAULT_TEMPLATE_ROOT)]
+    template_root: PathBuf,
+    /// Include tera templates matching a glob expression
+    #[clap(long, value_name = "GLOB", default_value = "**/*.tera")]
+    template_include: Option<String>,
+    #[clap(subcommand)]
+    cmd: Option<Subcommand>,
+}
+
+#[derive(Parser)]
+enum Subcommand {
+    /// Check whether a renderer is supported by this preprocessor
+    Supports { renderer: PathBuf },
 }
 
 fn main() {
-    let matches = app().get_matches();
+    let args = Args::parse();
 
-    if matches.subcommand_matches("supports").is_some() {
+    if let Some(Subcommand::Supports { .. }) = args.cmd {
         // We support every renderer
         process::exit(0);
     }
 
-    let ctx_src = match (matches.value_of("json"), matches.value_of("toml")) {
+    let ctx_src = match (args.json, args.toml) {
         (Some(_), Some(_)) => exit_with_error(anyhow!("cannot set both json and toml context")),
         (Some(json_path), None) => StaticContextSource::from_json_file(json_path),
         (None, Some(toml_path)) => StaticContextSource::from_toml_file(toml_path),
@@ -84,20 +68,16 @@ fn main() {
 
     let mut preprocessor = TeraPreprocessor::new(ctx_src);
 
-    if let Some(glob_str) = matches.value_of("template-include") {
-        let root_dir = matches
-            .value_of("template-root")
-            .unwrap_or(DEFAULT_TEMPLATE_ROOT);
-
+    if let Some(glob_str) = args.template_include {
         if glob_str != "false" {
-            if let Err(err) = preprocessor.include_templates(root_dir, glob_str) {
-                exit_with_error(anyhow!(err));
+            if let Err(err) = preprocessor.include_templates(&args.template_root, &glob_str) {
+                exit_with_error(err);
             }
         }
     }
 
     if let Err(err) = handle_preprocessing(&preprocessor) {
-        exit_with_error(anyhow!(err));
+        exit_with_error(err);
     }
 }
 
