@@ -14,7 +14,7 @@ mod context;
 
 use std::path::Path;
 
-use anyhow::anyhow;
+use anyhow::Context as _;
 use globwalk::GlobWalkerBuilder;
 use mdbook::book::{Book, BookItem};
 use mdbook::errors::Error;
@@ -123,9 +123,7 @@ fn collect_item_chapters<'a>(
         match item {
             BookItem::Chapter(chapter) => {
                 if let Some(ref path) = chapter.path {
-                    let path = path
-                        .to_str()
-                        .ok_or_else(|| anyhow!("invalid chapter path"))?;
+                    let path = path.to_str().context("invalid chapter path")?;
                     templates.push((path, chapter.content.as_str()));
                 }
                 collect_item_chapters(templates, chapter.sub_items.as_slice())?;
@@ -145,9 +143,7 @@ fn render_item_chapters(
         match item {
             BookItem::Chapter(chapter) => {
                 if let Some(ref path) = chapter.path {
-                    let path = path
-                        .to_str()
-                        .ok_or_else(|| anyhow!("invalid chapter path"))?;
+                    let path = path.to_str().context("invalid chapter path")?;
                     chapter.content = tera.render(path, context)?;
                 }
                 render_item_chapters(tera, context, chapter.sub_items.as_mut_slice())?;
