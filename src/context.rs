@@ -60,7 +60,7 @@ impl StaticContextSource {
         P: AsRef<Path>,
     {
         let context_str = fs::read_to_string(path)?;
-        let value: toml::Value = context_str.parse()?;
+        let value: toml::Table = context_str.parse()?;
         let context = Context::from_serialize(value)?;
         Ok(Self::new(context))
     }
