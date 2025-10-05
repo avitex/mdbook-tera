@@ -4,7 +4,7 @@
 
 # mdbook-tera
 
-**[Tera](https://github.com/Keats/tera) preprocessor for [mdBook](https://github.com/rust-lang/mdBook)**  
+**[Tera](https://github.com/Keats/tera) preprocessor for [mdBook](https://github.com/rust-lang/mdBook)**
 API documentation hosted on [docs.rs](https://docs.rs/mdbook-tera).
 
 ```text
