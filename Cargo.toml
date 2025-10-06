@@ -27,7 +27,7 @@ serde = "~1"
 anyhow = "~1"
 semver = "~1"
 tera = "^1.5.0"
-globwalk = "0.8"
+globwalk = "0.9"
 mdbook = { version = "0.4", default-features = false }
 
 toml = { version = "~0.9", optional = true }
