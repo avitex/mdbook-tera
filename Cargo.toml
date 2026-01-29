@@ -28,7 +28,7 @@ anyhow = "~1"
 semver = "~1"
 tera = "^1.5.0"
 globwalk = "0.8"
-mdbook = { version = "0.4", default-features = false }
+mdbook-preprocessor = "0.5"
 
 toml = { version = "~0.9", optional = true }
 serde_json = { version = "~1", optional = true }

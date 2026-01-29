@@ -13,9 +13,9 @@ use std::path::Path;
 
 use anyhow::Context as _;
 use globwalk::GlobWalkerBuilder;
-use mdbook::book::{Book, BookItem};
-use mdbook::errors::Error;
-use mdbook::preprocess::{Preprocessor, PreprocessorContext};
+use mdbook_preprocessor::book::{Book, BookItem};
+use mdbook_preprocessor::errors::Error;
+use mdbook_preprocessor::{Preprocessor, PreprocessorContext};
 use tera::{Context, Tera};
 
 pub use self::context::{ContextSource, StaticContextSource};
@@ -105,11 +105,11 @@ where
 fn render_book_items(book: &mut Book, tera: &mut Tera, context: &Context) -> Result<(), Error> {
     let mut templates = Vec::new();
     // Build the list of templates
-    collect_item_chapters(&mut templates, book.sections.as_slice())?;
+    collect_item_chapters(&mut templates, book.items.as_slice())?;
     // Register them
     tera.add_raw_templates(templates)?;
     // Render chapters
-    render_item_chapters(tera, context, book.sections.as_mut_slice())
+    render_item_chapters(tera, context, book.items.as_mut_slice())
 }
 
 fn collect_item_chapters<'a>(

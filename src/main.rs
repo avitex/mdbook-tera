@@ -3,8 +3,8 @@ use std::{io, process};
 
 use anyhow::anyhow;
 use clap::Parser;
-use mdbook::errors::Error;
-use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
+use mdbook_preprocessor::errors::Error;
+use mdbook_preprocessor::{self, Preprocessor};
 use semver::{Version, VersionReq};
 
 use mdbook_tera::{StaticContextSource, TeraPreprocessor};
@@ -82,10 +82,10 @@ fn main() {
 }
 
 fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
-    let (ctx, book) = CmdPreprocessor::parse_input(io::stdin())?;
+    let (ctx, book) = mdbook_preprocessor::parse_input(io::stdin())?;
 
     let ver = Version::parse(ctx.mdbook_version.as_str()).unwrap();
-    let ver_req = VersionReq::parse(mdbook::MDBOOK_VERSION).unwrap();
+    let ver_req = VersionReq::parse(mdbook_preprocessor::MDBOOK_VERSION).unwrap();
 
     if !ver_req.matches(&ver) {
         eprintln!(
